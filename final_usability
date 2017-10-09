@@ -1,0 +1,66 @@
+import binary_blur
+
+def file_to_string(karyotype, ID): #turns specific frameSummary file into string
+	with ('./' + karyotype + '/rest_' + ID + '/motionOutlierPlots/frameSummary.txt', 'r') as frame_summary_file:
+		frame_string = frame_summary_file.read()
+		frame_line = list(frame_string.replace('\n', ''))
+	return frame_line
+
+def unusable_num(fixed_string):
+	unusable_frames = 0
+	fixed_list = list(fixed_string.replace('\n', ''))
+	for binary in fixed_list:
+		if binary == '1':
+			unusable_frames += 1
+	return unusable_frames
+
+def FSL_compatible_string(fixed_string, unusable_num):
+	u_instance = 0
+	final_string = ''
+	for binary in fixed_string:
+		if binary == '0':
+			columns = 0
+			row = ''
+			while columns <= unusable_num:
+				row = row + '0   '
+				columns += 1
+			row = row + '\n'
+			final_string += row
+		if binary == '1':                          
+			columns = 0
+			row = ''
+			while columns <= unusable_num:
+				#add the zeros
+				#if there is 
+				if columns == u_instance:
+					if u_instance != 0:
+						row = row + '1   '
+					else:
+						row = '1   '
+				row = row + '0   '
+				columns += 1
+			u_instance += 1
+			row = row + '\n'
+			final_string += row
+		else:
+			row = '\n'
+			final_string += row
+	return final_string
+
+def create_FSL_compatible(final_string):
+	print(final_string)
+	with ('final_FSL_Summary.txt', 'r+') as final_file:
+		final_file = final_file.write(final_string)
+	return final_file.read()
+						
+
+
+#print "Please enter the karyotype."
+#user_karyotype = str(raw_input())
+#print "Please enter the ID number."
+#user_ID = str(raw_input())
+frame_string = open('frameSummary.txt', 'r').read() #file_to_string(user_karyotype, user_ID) #frameSummary.txt in string form
+print(frame_string)
+fixed_string = binary_blur(frame_string) #frameSummary.txt in string form, fixed
+final_string = FSL_compatible_string(fixed_string, unusable_num(fixed_string))
+create_FSL_compatible(final_string)
